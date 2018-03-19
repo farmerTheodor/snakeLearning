@@ -6,7 +6,7 @@ class Board(object):
 	def __init__(self):
 		super(Board, self).__init__()
 		self.gameBoard = []
-		self.boardSize = 32
+		self.boardSize = 10
 		for x in range(0,self.boardSize):
 			new = []
 			for y in range(0,self.boardSize):
@@ -15,7 +15,7 @@ class Board(object):
 		
 
 	def initSnake(self, x, y):
-		self.gameBoard[int(y)][int(x)] = 1
+		self.gameBoard[int(y)][int(x)] = 3
 
 	def placeApple(self):
 		ranX = randint(0,self.boardSize - 1)
@@ -24,6 +24,15 @@ class Board(object):
 			ranX = randint(0,self.boardSize -1)
 			ranY = randint(0,self.boardSize - 1)
 		self.gameBoard[ranY][ranX] = 2
+
+	def numZeroes(self):
+		numZeroes = 0
+		for y in range(0,self.boardSize):
+			for x in range(0,self.boardSize):
+				if(self.gameBoard[y][x] == 0):
+					numZeroes = numZeroes + 1
+		return(numZeroes)
+
 
 	def drawBoard(self):
 		for y in range(0,self.boardSize):
@@ -47,7 +56,13 @@ class Snake(object):
 			self.futureMoveY = self.currentBodyY[0]
 			self.snakeLength = 1
 			self.currentBoard.placeApple()
+			self.score = 0
 				
+		def increaseScore(self,scoreCondition):
+			if(scoreCondition == 2):
+				self.score = self.score + 200
+			elif(scoreCondition == 1):
+				self.score = self.score - 1;
 
 
 		def checkBoard(self,x,y):
@@ -65,10 +80,16 @@ class Snake(object):
 				#getapple
 				return(2)
 
+		def isGoalState(self):
+			 numZeroes = self.currentBoard.numZeroes()
+			 if(numZeroes == 0):
+			 	return(True)
+			 return(False)
 
 		def gameLoop(self):
 			nextMove = ""
 			while(nextMove != "q"):
+
 				self.currentBoard.drawBoard()
 				nextMove = input()
 				if(nextMove == "w"):
@@ -83,21 +104,28 @@ class Snake(object):
 				if(action == 0):
 					nextMove = "q"
 				elif(action == 1):
+					self.increaseScore
 					self.moveSnake()
 				elif(action == 2):
 					self.growSnake()
-					self.currentBoard.placeApple()
+					self.increaseScore(action)
+					if(not self.isGoalState()):
+						self.currentBoard.placeApple()
+					else:
+						nextMove = "q"
+			
 			print("thank for playing");
 		
 
 		def growSnake(self):
-			self.currentBoard.gameBoard[self.futureMoveY][self.futureMoveX] = 1
+			self.currentBoard.gameBoard[self.futureMoveY][self.futureMoveX] = 3
+			self.currentBoard.gameBoard[self.currentBodyY[0]][self.currentBodyX[0]] = 1
 			self.currentBodyX.insert(0,self.futureMoveX)
 			self.currentBodyY.insert(0,self.futureMoveY)
 			self.snakeLength = self.snakeLength + 1
 
 		def moveSnake(self):
-			self.currentBoard.gameBoard[self.futureMoveY][self.futureMoveX] = 1
+			self.currentBoard.gameBoard[self.futureMoveY][self.futureMoveX] = 3
 			self.currentBoard.gameBoard[self.currentBodyY[self.snakeLength - 1]][self.currentBodyX[self.snakeLength -1]] = 0
 			replaceX = self.currentBodyX[0]
 			replaceY = self.currentBodyY[0]
@@ -108,6 +136,7 @@ class Snake(object):
 				replaceYNext = self.currentBodyY[x+1]
 				self.currentBodyX[x + 1] = replaceX
 				self.currentBodyY[x + 1] = replaceY
+				self.currentBoard.gameBoard[replaceY][replaceX] = 1
 				replaceX = replaceXNext
 				replaceY = replaceYNext
 
@@ -120,6 +149,7 @@ def main():
 	newBoard = Board()
 	runGame = Snake(newBoard)
 	runGame.gameLoop()
+	print(runGame.score)
 
 
 
